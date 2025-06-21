@@ -3,44 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zomato</title>
+    <title>Kirana Express - Grocery Delivery in Minutes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div id="head">
-        <button id="Filters">Filters</button>
-        <button id="Offers">Offers</button>
-        <button id="Rating">Rating 4.5+</button>
-        <button id="Alcohol">Serves Alcohol</button>
-        <button id="Open">Open Now</button>
+    <header>
+        <div class="container">
+            <h1 class="logo">Kirana Express</h1>
+            <div class="location-selector">
+                <i class="fas fa-map-marker-alt"></i>
+                <span id="currentLocation">Detecting your location...</span>
+                <button id="changeLocation">Change</button>
+            </div>
+            <div class="user-actions">
+                <button id="cartBtn"><i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <div class="container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for products or kirana stores...">
+                <button id="searchBtn"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
     </div>
 
-      <!-- Filter options popup -->
-      <div id="filterPopup" class="hidden">
-        <h3>Choose Filter</h3>
-        <div class="filterOption">
-            <input type="radio" id="sortByRating" name="filterOption" value="rating">
-            <label for="sortByRating">Sort by Rating</label>
+    <div class="category-bar">
+        <div class="container">
+            <div class="category-scroll">
+                <button class="category-btn active" data-category="all">All</button>
+                <button class="category-btn" data-category="vegetables">Vegetables</button>
+                <button class="category-btn" data-category="fruits">Fruits</button>
+                <button class="category-btn" data-category="dairy">Dairy</button>
+                <button class="category-btn" data-category="snacks">Snacks</button>
+                <button class="category-btn" data-category="beverages">Beverages</button>
+                <button class="category-btn" data-category="household">Household</button>
+            </div>
         </div>
-        <div class="filterOption">
-            <input type="radio" id="sortHighToLow" name="filterOption" value="highLow">
-            <label for="sortHighToLow">High to Low (Price)</label>
-        </div>
-        <div class="filterOption">
-            <input type="radio" id="costOption" name="filterOption" value="costLowHigh">
-            <label for="costOption">Cost: Low to High</label>
-        </div>
-        <div class="filterOption">
-            <input type="radio" id="distanceOption" name="filterOption" value="distance">
-            <label for="distanceOption">Distance</label>
-        </div>
-        <button id="applyFilter">Apply</button>
-        <button id="closeFilter">Close</button>
     </div>
-     
-    <!-- insert all the cards here -->
-    <div id="root"></div>
+
+    <main class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Finding kirana stores near you...</p>
+        </div>
+
+        <div id="locationPrompt" class="location-prompt hidden">
+            <div class="prompt-content">
+                <h3>Allow Location Access</h3>
+                <p>To find the nearest kirana stores, please allow location access</p>
+                <button id="enableLocation" class="primary-btn">Allow Location</button>
+                <button id="manualLocation" class="secondary-btn">Enter Manually</button>
+            </div>
+        </div>
+
+        <div id="storeCount" class="store-count hidden">
+            <span id="count">0</span> stores found near you
+            <span id="deliveryTime" class="delivery-time">• Delivery in 15-30 mins</span>
+        </div>
+
+        <div id="root" class="store-grid"></div>
+
+        <div id="noResults" class="no-results hidden">
+            <i class="fas fa-store-slash"></i>
+            <h3>No kirana stores found</h3>
+            <p>Try adjusting your location or search term</p>
+        </div>
+    </main>
+
+    <!-- Store Modal -->
+    <div id="storeModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalStoreName"></h2>
+                <div class="store-info">
+                    <span class="rating"><i class="fas fa-star"></i> <span id="modalRating"></span></span>
+                    <span class="delivery-time"><i class="fas fa-clock"></i> <span id="modalDeliveryTime"></span> mins</span>
+                    <span class="distance"><i class="fas fa-map-marker-alt"></i> <span id="modalDistance"></span> km</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="store-products">
+                    <h3>Popular Products</h3>
+                    <div class="product-search">
+                        <input type="text" placeholder="Search products in this store...">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                    <div id="productList" class="product-list"></div>
+                </div>
+                <div class="order-summary">
+                    <h3>Your Order</h3>
+                    <div id="orderItems" class="order-items"></div>
+                    <div class="order-total">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">₹0</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Delivery</span>
+                            <span>₹20</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span id="grandTotal">₹20</span>
+                        </div>
+                        <button id="placeOrder" class="primary-btn">Place Order</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Picker Modal -->
+    <div id="locationModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2>Select Your Location</h2>
+            </div>
+            <div class="modal-body">
+                <div class="map-container" id="map"></div>
+                <div class="location-search">
+                    <input type="text" id="locationSearch" placeholder="Search for area, street name...">
+                    <button id="confirmLocation" class="primary-btn">Confirm Location</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2>Your Cart</h2>
+            </div>
+            <div class="modal-body">
+                <div id="cartItems" class="cart-items"></div>
+                <div class="cart-total">
+                    <div class="total-row">
+                        <span>Subtotal</span>
+                        <span id="cartSubtotal">₹0</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Delivery</span>
+                        <span>₹20</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total</span>
+                        <span id="cartGrandTotal">₹20</span>
+                    </div>
+                    <button id="checkoutBtn" class="primary-btn">Proceed to Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Confirmation Modal -->
+    <div id="orderConfirmation" class="modal hidden">
+        <div class="modal-content">
+            <div class="order-confirmation">
+                <div class="confirmation-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Order Placed Successfully!</h2>
+                <p>Your order will be delivered in <span id="estimatedDeliveryTime">20-30</span> minutes</p>
+                <div class="store-info">
+                    <img id="confirmationStoreImage" src="" alt="Store">
+                    <div>
+                        <h3 id="confirmationStoreName"></h3>
+                        <p id="confirmationStoreAddress"></p>
+                    </div>
+                </div>
+                <button id="trackOrder" class="primary-btn">Track Order</button>
+                <button id="continueShopping" class="secondary-btn">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
